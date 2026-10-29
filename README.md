@@ -1,8 +1,9 @@
 # Tensura Battlewills
 
-Tensura Battlewills adds the non-magical combat arts of the Tensura RPG pack.
-Battlewills are martial techniques bound to how you fight, from sword and spear
-discipline to unarmed brawling, defined as datapack content.
+Tensura Battlewills adds generic handling for **Tensura: Reincarnated**'s
+Battlewills: the pack's non-magical combat arts, martial techniques bound to
+how you fight, from sword and spear discipline to unarmed brawling, handled
+through datapack definitions.
 
 ## What it does
 
@@ -26,9 +27,6 @@ full plan, research tables and open design decisions.)*
 | Required | Tensura Ability Core | The ability contracts battlewills register against |
 | Optional | Tensura Ability Hotbar | Battlewills appear in the shared hotbar |
 | Optional | Tensura - Better Spellcasting Bridge | Battlewills fire from weapon combos |
-
-When the first alpha ships, drop the jar in `mods/` alongside its required
-dependencies.
 
 ## Credits
 - Built on [NeoForge](https://neoforged.net/).
