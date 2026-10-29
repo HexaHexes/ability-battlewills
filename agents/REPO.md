@@ -1,23 +1,35 @@
-# Repo rules — <repo name>
+# Repo rules - tensura-battlewills
 
 Repo-specific rules and notes. The org-wide `AGENTS.md` beside this file is
 maintained in [`neoforge-mod-template`](https://github.com/HexaHexes/neoforge-mod-template)
-and pulled in verbatim — **never hand-edit it.** Everything in this file is this
+and pulled in verbatim - **never hand-edit it.** Everything in this file is this
 repo's own and is edited freely; keep it aligned with the org rules rather than
 restating them.
 
-**Repo:** `HexaHexes/<repo-name>` · **Mod ID:** `<mod_id>` · **Branch:** `main`
-**Platform:** Minecraft 1.21.1 / NeoForge 21.1.259 / JDK 21 · **Jar:** `build/libs/<mod_id>-<version>.jar`
+**Repo:** `HexaHexes/tensura-battlewills` - **Mod ID:** `tensura_battlewills` - **Branch:** `main`
+**Platform:** Minecraft 1.21.1 / NeoForge 21.1.259 / JDK 21 - **Jar:** `build/libs/tensura_battlewills-<version>.jar`
 
-One-paragraph description of what this mod is and what it changes in the game.
+Battlewill martial abilities for the Tensura RPG pack: weapon-style definitions
+(sword, spear/polearm, axe/heavy, ranged, shield, unarmed), active techniques,
+weapon enhancements, passives, resource conversion and costs, progression and
+restrictions - datapack-driven for metadata, costs, restrictions and mappings,
+with code adapters only where custom execution behaviour demands it.
 
 **Dependencies**
-- Required: Minecraft, NeoForge.
-- Optional: list any dependency the mod works without, and how the code gates it.
+- Required: Minecraft, NeoForge, `tensura-ability-core` (from GitHub Packages
+  via `PACKAGE_READ_TOKEN`, scoped to the Gradle step only).
+- Optional: `tensura_ability_hotbar`, `tensura_better_spellcasting_bridge`,
+  `better_spellcasting`, `irons_spellbooks` - never hard dependencies; all
+  integration through soft hooks.
 
-**Test:** `./gradlew runGameTestServer` — `<ClassName>` (1 test). `expectedTests = 1`
+**Test:** `./gradlew runGameTestServer` - `TensuraBattlewillsGameTests` (1 test). `expectedTests = 1`
 in `build.gradle` must match the `@GameTest` count.
 
 **Gotchas**
-- Note anything a future edit could break: mixin targets, version-file coupling,
-  tag overrides, or a dependency that is optional in the toml but hard in the code.
+- **Data-driven does not mean arbitrary behaviour.** Datapacks carry metadata,
+  costs, restrictions and mappings; execution logic needs a code adapter. Do not
+  advertise or attempt datapack-defined custom behaviour.
+- ISS and Better Spellcasting must never become hard dependencies of this repo -
+  the battlewill system stands alone.
+- Its ability registration crosses into `tensura-ability-core` contracts: schema
+  changes there are `breaking` and must be coordinated with that repo's issues.
