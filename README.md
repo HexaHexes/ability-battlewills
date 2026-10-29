@@ -1,29 +1,24 @@
 # Tensura Battlewills
 
-Tensura Battlewills adds the non-magical combat arts of the Tensura RPG pack:
-battlewills - martial techniques bound to how you fight, from sword and spear
-discipline to unarmed brawling, defined as datapack content wherever the
-behaviour allows.
+Tensura Battlewills adds generic handling for **Tensura: Reincarnated**'s
+Battlewills: the pack's non-magical combat arts, martial techniques bound to
+how you fight, from sword and spear discipline to unarmed brawling, handled
+through datapack definitions.
 
 ## What it does
 
-*(Design phase - no release yet. The open issues on this repository hold the
+*(Design phase, no release yet. The open issues on this repository hold the
 full plan, research tables and open design decisions.)*
 
 - **Weapon styles** - sword, spear and polearm, axe and heavy weapon, ranged,
   shield and defensive techniques, and unarmed combat as its own style.
-- **Techniques and enhancements** - active abilities you trigger, weapon
-  enhancements you apply, passives that shape the fight.
+- Techniques are active abilities you trigger, weapon enhancements you apply,
+  and passives that shape the fight.
 - **Progression and cost** - abilities carry resource costs, progression and
   restrictions, all readable from datapack definitions.
-- **Plays well with others** - native activation first, with hooks for the
-  shared ability hotbar and for combo bridges, without making Iron's Spells or
-  Better Spellcasting hard dependencies.
-
-## Getting it in-game
-
-Not yet available - no release has been cut. When the first alpha ships: drop
-the jar in `mods/` alongside its required dependencies.
+- Battlewills use native activation first, with hooks for the shared ability
+  hotbar and for combo bridges. Iron's Spells and Better Spellcasting are not
+  hard dependencies.
 
 ## Dependencies
 | | Mod | Why |
