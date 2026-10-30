@@ -1,10 +1,10 @@
-package org.bitwisemadness.tensurabattlewills.gametest;
+package org.bitwisemadness.abilitycorebattlewills.gametest;
 
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
-import org.bitwisemadness.tensurabattlewills.TensuraBattlewills;
+import org.bitwisemadness.abilitycorebattlewills.AbilityCoreBattlewills;
 
 /**
  * Smoke test: proves the mod loads and the GameTest harness runs.
@@ -13,11 +13,11 @@ import org.bitwisemadness.tensurabattlewills.TensuraBattlewills;
  * {@code expectedTests} count in {@code build.gradle} in sync with the number
  * of {@code @GameTest} methods here, or the harness fails the run.</p>
  */
-@GameTestHolder(TensuraBattlewills.MOD_ID)
+@GameTestHolder(AbilityCoreBattlewills.MOD_ID)
 @PrefixGameTestTemplate(false)
-public final class TensuraBattlewillsGameTests {
+public final class AbilityCoreBattlewillsGameTests {
 
-    private TensuraBattlewillsGameTests() {
+    private AbilityCoreBattlewillsGameTests() {
     }
 
     /** The mod is loaded and the empty structure template resolves. */

@@ -1,4 +1,4 @@
-# Repo rules - tensura-battlewills
+# Repo rules - ability-core-battlewills
 
 Repo-specific rules and notes. The org-wide `AGENTS.md` beside this file is
 maintained in [`neoforge-mod-template`](https://github.com/HexaHexes/neoforge-mod-template)
@@ -6,8 +6,8 @@ and pulled in verbatim - **never hand-edit it.** Everything in this file is this
 repo's own and is edited freely; keep it aligned with the org rules rather than
 restating them.
 
-**Repo:** `HexaHexes/tensura-battlewills` - **Mod ID:** `tensura_battlewills` - **Branch:** `main`
-**Platform:** Minecraft 1.21.1 / NeoForge 21.1.259 / JDK 21 - **Jar:** `build/libs/tensura_battlewills-<version>.jar`
+**Repo:** `HexaHexes/ability-core-battlewills` - **Mod ID:** `ability_core_battlewills` - **Branch:** `main`
+**Platform:** Minecraft 1.21.1 / NeoForge 21.1.259 / JDK 21 - **Jar:** `build/libs/ability_core_battlewills-<version>.jar`
 
 Battlewill martial abilities for the Tensura RPG pack: weapon-style definitions
 (sword, spear/polearm, axe/heavy, ranged, shield, unarmed), active techniques,
@@ -22,7 +22,7 @@ with code adapters only where custom execution behaviour demands it.
   `better_spellcasting`, `irons_spellbooks` - never hard dependencies; all
   integration through soft hooks.
 
-**Test:** `./gradlew runGameTestServer` - `TensuraBattlewillsGameTests` (1 test). `expectedTests = 1`
+**Test:** `./gradlew runGameTestServer` - `AbilityCoreBattlewillsGameTests` (1 test). `expectedTests = 1`
 in `build.gradle` must match the `@GameTest` count.
 
 **Gotchas**
