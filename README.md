@@ -1,6 +1,6 @@
-# Ability Core: Battlewills
+# Ability Battlewills
 
-Ability Core: Battlewills adds generic handling for **Tensura: Reincarnated**'s
+Ability Battlewills adds generic handling for **Tensura: Reincarnated**'s
 Battlewills: the pack's non-magical combat arts, martial techniques bound to
 how you fight, from sword and spear discipline to unarmed brawling, handled
 through datapack definitions.
