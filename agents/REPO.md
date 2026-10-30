@@ -18,7 +18,7 @@ with code adapters only where custom execution behaviour demands it.
 **Dependencies**
 - Required: Minecraft, NeoForge, `tensura-ability-core` (from GitHub Packages
   via `PACKAGE_READ_TOKEN`, scoped to the Gradle step only).
-- Optional: `tensura_ability_hotbar`, `tensura_better_spellcasting_bridge`,
+- Optional: `ability_hotbar`, `tensura-better-spellcasting-bridge`,
   `better_spellcasting`, `irons_spellbooks` - never hard dependencies; all
   integration through soft hooks.
 
