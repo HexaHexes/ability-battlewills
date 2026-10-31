@@ -22,6 +22,16 @@ configuredBackground = "minecraft:textures/block/stone.png"
 [[mixins]]
 config = "${mod_id}.mixins.json"
 
+# Declared optional while the mod carries no core code yet (nothing breaks
+# without core, so requiring it would over-constrain loading). Flip to
+# "required" in the same PR that first imports a core type in main.
+[[dependencies.${mod_id}]]
+modId = "ability_core"
+type = "optional"
+versionRange = "[1.0.0-alpha.9,)"
+ordering = "AFTER"
+side = "BOTH"
+
 [[dependencies.${mod_id}]]
 modId = "neoforge"
 type = "required"
