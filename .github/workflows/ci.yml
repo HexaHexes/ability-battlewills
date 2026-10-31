@@ -27,6 +27,8 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  # Read the ability_core artifact from GitHub Packages (org Maven registry).
+  packages: read
 
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.run_id }}
@@ -47,6 +49,10 @@ jobs:
           cache: gradle
 
       - name: Build and run JUnit suite
+        env:
+          PACKAGE_READ_TOKEN: ${{ secrets.PACKAGE_READ_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PACKAGE_READ_TOKEN || github.token }}
+          GITHUB_ACTOR: ${{ github.actor }}
         run: ./gradlew build --no-daemon --stacktrace
 
       # gradlew build reports SUCCESS when there are no test sources at all -
@@ -172,6 +178,10 @@ jobs:
       # still returned BUILD SUCCESSFUL. The success line in the log is the
       # only trustworthy signal, so this step never decides the job outcome.
       - name: Run GameTest server
+        env:
+          PACKAGE_READ_TOKEN: ${{ secrets.PACKAGE_READ_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PACKAGE_READ_TOKEN || github.token }}
+          GITHUB_ACTOR: ${{ github.actor }}
         run: |
           set +e
           ./gradlew runGameTestServer --no-daemon 2>&1 | tee gametest.log
@@ -232,6 +242,7 @@ jobs:
         env:
           PACKAGE_READ_TOKEN: ${{ secrets.PACKAGE_READ_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.PACKAGE_READ_TOKEN || github.token }}
+          GITHUB_ACTOR: ${{ github.actor }}
         run: ./gradlew spotbugsMain --no-daemon --stacktrace
 
       # Report-only during the grace period: violations print in the log
@@ -241,6 +252,7 @@ jobs:
         env:
           PACKAGE_READ_TOKEN: ${{ secrets.PACKAGE_READ_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.PACKAGE_READ_TOKEN || github.token }}
+          GITHUB_ACTOR: ${{ github.actor }}
         run: ./gradlew spotlessCheck --no-daemon --stacktrace
         continue-on-error: true
 
