@@ -233,6 +233,15 @@ tasks.withType(Checkstyle).configureEach {
     }
 }
 
+// Checkstyle 10.21.0 depends on guava 33.3.1-jre, which GHSA-xxph-c9ww-hj94
+// (patched in 33.7.2) makes a deserialization DoS. Pin the patched version on
+// the tool classpath so the dependency-review gate stays meaningful.
+configurations.matching { it.name == 'checkstyle' }.configureEach {
+    resolutionStrategy {
+        force 'com.google.guava:guava:33.7.2-jre'
+    }
+}
+
 spotless {
     enforceCheck false
     java {
