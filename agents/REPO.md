@@ -22,6 +22,8 @@ with code adapters only where custom execution behaviour demands it.
   `better_spellcasting`, `irons_spellbooks` - never hard dependencies; all
   integration through soft hooks.
 
+**Release plan:** [docs/release-plan.md](https://github.com/HexaHexes/ability-core/blob/main/docs/release-plan.md) - the release train, per-repo checklist, core-before-consumers sequencing and ALPHA_RELEASES state (hub: ability-core).
+
 **Test:** `./gradlew runGameTestServer` - `AbilityBattlewillsGameTests` (1 test). `expectedTests = 1`
 in `build.gradle` must match the `@GameTest` count.
 
