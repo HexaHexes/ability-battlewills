@@ -76,6 +76,15 @@ public final class UnlockGate {
     }
 
     /**
+     * The tracked ids as an unmodifiable view - the registration seam for
+     * {@code TensuraActivation}'s handler loop (same phase guarantees:
+     * complete before common setup).
+     */
+    public static Set<ResourceLocation> trackedIds() {
+        return java.util.Collections.unmodifiableSet(TRACKED);
+    }
+
+    /**
      * Common setup: the eligibility rule and the availability declarations,
      * gated on Tensura being present (without ARR there is no learned state
      * and no ungated consumer path - the pairs' gate pattern). Rules run in

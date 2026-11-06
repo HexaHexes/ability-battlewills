@@ -71,9 +71,15 @@ public final class AbilityTensuraGameTests {
             check(AvailabilityProviders.has(id),
                     "the unlock gate must declare availability for: " + id);
         }
-        // ...and its activation half sits on core's canonical chain.
+        // ...its activation half sits on core's canonical chain...
         check(AbilityCore.ELIGIBILITY.size() > 0,
                 "the unlock gate must register an eligibility rule");
+        // ...and every tracked ability carries the shared NATIVE handler
+        // (#42 slice 2: one service, never per-feature calls).
+        for (ResourceLocation id : expected) {
+            check(AbilityCore.HANDLERS.get(id).isPresent(),
+                    "the activation service must register a handler for: " + id);
+        }
         helper.succeed();
     }
 
