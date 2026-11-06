@@ -15,6 +15,7 @@ import org.bitwisemadness.abilitycore.api.ActivationOutcome;
 import org.bitwisemadness.abilitycore.api.ActivationRequest;
 import org.bitwisemadness.abilitycore.api.ActivationResult;
 import org.bitwisemadness.abilitycore.api.ChargingModel;
+import org.bitwisemadness.abilitycore.api.CooldownOwners;
 import org.bitwisemadness.abilitytensura.gate.UnlockGate;
 
 /**
@@ -41,16 +42,17 @@ import org.bitwisemadness.abilitytensura.gate.UnlockGate;
  *       slots store exactly {@code (skill, mode)} - so parity means
  *       resolving both values <b>server-side from the player's own
  *       preset</b>, never from client input.</li>
- *   <li>ARR messages its own cooldown refusal (red chat line) - we read
- *       the same state to carry the matching outcome, no second
- *       messaging.</li>
+ *   <li>ARR messages its own cooldown refusal (red chat line) - our
+ *       handler reads the same state so core's pre-activation gate
+ *       carries the matching outcome, no second messaging.</li>
  * </ul>
  *
  * <p>Fail-closed throughout (the direct-invocation precedent from
  * ability-iss): unlearned refuses RESTRICTED (defense in depth behind the
  * eligibility rule), not-equipped-in-preset refuses RESTRICTED (the native
  * keybind cannot fire either - parity), stale preset mode refuses
- * UNAVAILABLE, cooldown refuses COOLDOWN (ARR has messaged), and a
+ * UNAVAILABLE, cooldown refuses COOLDOWN through core's pre-activation
+ * gate (ARR has messaged), and a
  * remaining {@code false} from the pipeline refuses UNAVAILABLE with
  * whatever specific reason ARR could not surface as a code (ability-iss'
  * boolean-mapping precedent; core's refusal log carries it).</p>
@@ -77,6 +79,10 @@ public final class TensuraActivation {
         for (ResourceLocation id : UnlockGate.trackedIds()) {
             AbilityCore.HANDLERS.register(id, TensuraActivation::activate,
                     ChargingModel.NATIVE);
+            // Cooldown defers to ARR's own per-skill, per-mode window
+            // (core's HANDLER contract, alpha.45): core gates with this
+            // read, ARR stays the sole owner and start site of its state.
+            CooldownOwners.declareHandler(id, TensuraActivation::cooldownRemaining);
         }
     }
 
@@ -108,11 +114,6 @@ public final class TensuraActivation {
             // config, fail closed (startHoldSkill would reject it anyway).
             return ActivationResult.refused(ActivationOutcome.REFUSED_UNAVAILABLE);
         }
-        if (instance.onCoolDown(mode)
-                && !instance.canIgnoreCoolDown(player, mode)) {
-            // ARR messages its own red cooldown line; carry its outcome.
-            return ActivationResult.refused(ActivationOutcome.REFUSED_COOLDOWN);
-        }
         if (!SkillAPI.getSkillsFrom(player).startHoldSkill(id, slot, mode)) {
             // Boolean-only domain: no stable codes for the rest (mastery,
             // policy, energy) - the ability-iss precedent carries
@@ -120,6 +121,39 @@ public final class TensuraActivation {
             return ActivationResult.refused(ActivationOutcome.REFUSED_UNAVAILABLE);
         }
         return ActivationResult.ACTED;
+    }
+
+    /**
+     * The per-skill, per-mode cooldown gate (core's HANDLER contract,
+     * alpha.45): ARR's own window, resolved with the same preset slot the
+     * activation uses, so core's pre-activation gate and {@link #activate}
+     * can never disagree. Not-learned, not-equipped, and stale-preset
+     * cases answer 0 - those are RESTRICTED/UNAVAILABLE verdicts, not
+     * cooldown questions. Mode context (#113) stays future input exactly
+     * as in {@link #activate}: the preset's mode is today's semantics.
+     */
+    public static long cooldownRemaining(ActivationRequest request, ServerPlayer player) {
+        Optional<ManasSkillInstance> maybeInstance =
+                SkillAPI.getSkillsFrom(player).getSkill(request.abilityId());
+        if (maybeInstance.isEmpty()) {
+            return 0L;
+        }
+        ManasSkillInstance instance = maybeInstance.get();
+        int[] slotAndMode = resolvePresetSlot(player, instance);
+        if (slotAndMode == null) {
+            return 0L;
+        }
+        int mode = slotAndMode[1];
+        if (mode < 0 || mode >= instance.getModes()) {
+            return 0L;
+        }
+        if (instance.onCoolDown(mode)
+                && !instance.canIgnoreCoolDown(player, mode)) {
+            // ARR's boolean is the verdict; the floor of 1 keeps an
+            // inconsistent tick read from waving a cooling skill through.
+            return Math.max(1L, instance.getCoolDown(mode));
+        }
+        return 0L;
     }
 
     /**

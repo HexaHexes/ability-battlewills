@@ -157,7 +157,7 @@ dependencies {
     // bundled - and on the test runtime classpath for the contract test below.
     // Deliberate bump (docs/release-plan.md): the resource pairs need core's
     // provider/consumer surface and the mod-gated declare overloads (#88/#92).
-    def abilityCore = 'org.bitwisemadness.abilitycore:ability_core:1.0.0-alpha.44'
+    def abilityCore = 'org.bitwisemadness.abilitycore:ability_core:1.0.0-alpha.45'
     compileOnly abilityCore
     testImplementation abilityCore
     // Core is a runtime mod for every dev run and the GameTest server: the
