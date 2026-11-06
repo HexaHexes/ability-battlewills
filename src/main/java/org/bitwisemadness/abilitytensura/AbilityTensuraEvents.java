@@ -24,7 +24,7 @@ public final class AbilityTensuraEvents {
     private AbilityTensuraEvents() {
     }
 
-    /** Contributes the battlewill catalog (#10) to core's registry. */
+    /** Contributes the battlewill catalog (#58) to core's registry. */
     @SubscribeEvent
     public static void onRegisterAbilities(RegisterEvent event) {
         BattlewillCatalog.register(event);

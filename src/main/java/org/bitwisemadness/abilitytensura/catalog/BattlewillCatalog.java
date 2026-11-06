@@ -12,7 +12,7 @@ import org.bitwisemadness.abilitycore.api.ConsumptionStrategies;
 import org.bitwisemadness.abilitycore.registry.AbilityRegistries;
 
 /**
- * The battlewill catalog (ability-tensura#10): registers all 23 native
+ * The battlewill catalog (ability-tensura#58): registers all 23 native
  * battlewills as core ability definitions - pure metadata layering over
  * Tensura: Reincarnated's own content (SPIKE-bw-1, #2, inventory section 1).
  *
@@ -34,10 +34,9 @@ import org.bitwisemadness.abilitycore.registry.AbilityRegistries;
  *   <li><b>Empty costs</b> - battlewills charge native aura inside ARR's own
  *       callbacks (SPIKE-bw-1 section 2; ADR-002: NATIVE arts keep charging
  *       in their pipeline). Core must not price them.</li>
- *   <li><b>Styles are NOT here</b> - the style classification lives in the
- *       datapack overlay ({@code battlewill_styles.json}) per #10's selected
- *       approach; hardcoding a style per art in Java was explicitly
- *       rejected.</li>
+ *   <li><b>No styles here</b> - the style layer is content-shaped and rides
+ *       the deferred Better Spellcasting track (#10); this catalog carries
+ *       only the {@code battlewill} category tag.</li>
  * </ul>
  */
 public final class BattlewillCatalog {
@@ -45,9 +44,9 @@ public final class BattlewillCatalog {
     /**
      * The 23 registered native arts (SPIKE-bw-1 #2 section 1), as registry
      * paths under the {@code tensura} namespace. Order is the tag-file
-     * inventory order; the classification test pins completeness against
-     * this list and the datapack mapping. Package-private immutable list:
-     * only this package (and its test) enumerate the catalog.
+     * inventory order; the coverage gametest pins completeness against this
+     * list. Package-private: the field never leaves this package - external
+     * readers (the gametest) go through {@link #paths()}.
      */
     static final List<String> ART_PATHS = List.of(
         "aura_slash", "aura_sword", "earthshatter_kick", "heavy_slash",
@@ -74,6 +73,14 @@ public final class BattlewillCatalog {
     /** The full id for one catalog art path. */
     public static ResourceLocation idFor(String path) {
         return ResourceLocation.fromNamespaceAndPath("tensura", path);
+    }
+
+    /**
+     * The catalog's paths as an immutable view - the enumeration seam for
+     * the coverage gametest (the field itself stays package-private).
+     */
+    public static List<String> paths() {
+        return ART_PATHS;
     }
 
     /**
