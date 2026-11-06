@@ -26,6 +26,7 @@ import org.bitwisemadness.abilitycore.api.ActivationRequest;
 import org.bitwisemadness.abilitycore.api.ActivationResult;
 import org.bitwisemadness.abilitycore.api.ActivationSource;
 import org.bitwisemadness.abilitycore.api.ActivationType;
+import org.bitwisemadness.abilitycore.api.AmountResolvers;
 import org.bitwisemadness.abilitycore.api.ChargingModel;
 import org.bitwisemadness.abilitycore.api.ConsumptionStrategies;
 import org.bitwisemadness.abilitycore.api.ResourceConsumers;
@@ -73,7 +74,7 @@ class TensuraResourcesTest {
         Registry.register(fixture, PAID, new AbilityDefinition(
                 "tensura.skill.magicule_paid", null, SKILL_CATEGORY,
                 ActivationType.INSTANT, List.of(COST), ConsumptionStrategies.ALL,
-                Set.of(), Map.of()));
+                AmountResolvers.STATIC, Set.of(), Map.of()));
         AbilityRegistries.installRegistryForTests(fixture);
     }
 
