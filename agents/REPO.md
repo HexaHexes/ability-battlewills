@@ -1,4 +1,4 @@
-# Repo rules - ability-tensura
+# Repo rules - Ability: Tensura
 
 Repo-specific rules and notes. The org-wide `AGENTS.md` beside this file is
 maintained in [`neoforge-mod-template`](https://github.com/HexaHexes/neoforge-mod-template)
@@ -9,39 +9,29 @@ restating them.
 **Repo:** `HexaHexes/ability-tensura` - **Mod ID:** `ability_tensura` - **Branch:** `main`
 **Platform:** Minecraft 1.21.1 / NeoForge 21.1.259 / JDK 21 - **Jar:** `build/libs/ability_tensura-<version>.jar`
 
-Battlewill martial abilities for the Tensura RPG pack: weapon-style definitions
-(sword, spear/polearm, axe/heavy, ranged, shield, unarmed), active techniques,
-weapon enhancements, passives, resource conversion and costs, progression and
-restrictions - datapack-driven for metadata, costs, restrictions and mappings,
-with code adapters only where custom execution behaviour demands it.
+**Scope (owner directive, 2026-11-06; #45):** the single integration layer
+between *any and all* Tensura: Reincarnated ability systems - **battlewills,
+skills, and magic** - and ability-core / ability-hotbar. This repo owns no
+ability system: ARR registers them (battlewills under
+`registry.battlewill.{MeleeArts,ProjectileArts,UtilityArts}`; skills and magic
+through ManasCore's skill API) and ARR's pipelines stay the validating
+authority - we expose, classify and route; native refusals fail safe with no
+consumption. Both archetypes are in scope: active (cast) and passive
+(always-on, player enable/disable at will). Battlewill classification is
+datapack-driven (style tags over core definitions); execution adapters only
+where custom behaviour demands it.
 
 **Dependencies**
-- Required: Minecraft, NeoForge, `tensura-ability-core` (from GitHub Packages
-  via `PACKAGE_READ_TOKEN`, scoped to the Gradle step only).
+- Required: Minecraft, NeoForge, `ability_core`
+  (`org.bitwisemadness.abilitycore:ability_core`, from GitHub Packages via
+  `PACKAGE_READ_TOKEN`, scoped to the Gradle step only). The toml marks core
+  `optional`, but pair declarations gate only on Tensura's presence - treat
+  core as required; the discrepancy rides the dependency decision in #42.
+- Compile-only: Tensura: Reincarnated API (`tensura-neoforge`, never
+  bundled; ARR-facing code gates on `ModList("tensura")`).
 - Optional: `ability_hotbar`, `tensura-better-spellcasting-bridge`,
   `better_spellcasting`, `irons_spellbooks` - never hard dependencies; all
   integration through soft hooks.
-
-**Resource pairs** (issue #41): `TensuraResources.declareMagicules()` runs at
-mod construction and declares `tensura:magicule` - provider reads the player's
-current magicules from Tensura's existence storage, consumer deducts from the
-same store post-ACTED. The declaration gates on `ModList("tensura")` first, so
-an absent mod skips with a debug line and magicule costs fail closed with
-`no_provider` (core's #92 chain); the typed half lives in `MagiculePair` and is
-resolved only behind that gate. Core pin `1.0.0-alpha.37` carries the
-provider/consumer surface and the gated declare overloads.
-Issue #40 adds `tensura:aura` the same way through `AuraPair` - current aura
-from the same existence storage, so no ManasCore type enters either pair's
-signature chain and ADR-010's GPLv3 linkage question does not trigger here.
-Issue #43 adds `tensura:ep` through `EPPair` over EP's **direct** balance
-(`getEP`/`setEP`) - the composite premise is superseded (the
-`entity_existence` datapack carries spawn capacity bounds, not an EP rule),
-so this pair has no component dependency on the other two.
-All three pairs price EXTERNAL abilities only; battlewills' native
-single-charge path (ADR-002) is untouched. The three pair classes are
-byte-equivalent mirrors pending the shared-base extraction (#49).
-
-**Release plan:** [docs/release-plan.md](https://github.com/HexaHexes/ability-core/blob/main/docs/release-plan.md) - the release train, per-repo checklist, core-before-consumers sequencing and ALPHA_RELEASES state (hub: ability-core).
 
 **Test:** `./gradlew runGameTestServer` - `AbilityTensuraGameTests` (1 test). `expectedTests = 1`
 in `build.gradle` must match the `@GameTest` count.
@@ -51,6 +41,6 @@ in `build.gradle` must match the `@GameTest` count.
   costs, restrictions and mappings; execution logic needs a code adapter. Do not
   advertise or attempt datapack-defined custom behaviour.
 - ISS and Better Spellcasting must never become hard dependencies of this repo -
-  the battlewill system stands alone.
-- Its ability registration crosses into `tensura-ability-core` contracts: schema
-  changes there are `breaking` and must be coordinated with that repo's issues.
+  the integration layer stands alone.
+- Its registration crosses into ability-core contracts: schema changes there
+  are `breaking` and must be coordinated with that repo's issues.
