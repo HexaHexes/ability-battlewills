@@ -352,6 +352,17 @@ jobs:
             exit 0
           fi
 
+          # gradle.properties also carries mod identity (mod_id / mod_name /
+          # mod_group_id ...), so the doctrine guards the VERSION line itself:
+          # an identity or metadata edit that leaves mod_version untouched is
+          # not a bump, however many other files it ships with.
+          NEW_VERSION=$(grep '^mod_version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          OLD_VERSION=$(git show "$BASE:gradle.properties" | grep '^mod_version=' | cut -d= -f2 | tr -d '[:space:]')
+          if [ "$NEW_VERSION" = "$OLD_VERSION" ]; then
+            echo "gradle.properties changed but mod_version is unchanged ($NEW_VERSION): identity/metadata edit, not a version bump. OK."
+            exit 0
+          fi
+
           EXTRA=$(echo "$CHANGED" | grep -v '^gradle\.properties$' | grep -v '^$' || true)
           if [ -n "$EXTRA" ]; then
             echo "::error::Version bumps ride CI/CD after merge (neoforge-mod-template#81)."

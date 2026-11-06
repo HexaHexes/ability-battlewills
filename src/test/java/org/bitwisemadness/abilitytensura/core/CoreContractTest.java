@@ -1,4 +1,4 @@
-package org.bitwisemadness.abilitybattlewills.core;
+package org.bitwisemadness.abilitytensura.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
