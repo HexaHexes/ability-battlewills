@@ -3,6 +3,7 @@ package org.bitwisemadness.abilitytensura;
 import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import org.bitwisemadness.abilitytensura.resource.TensuraResources;
 import org.slf4j.Logger;
 
 /**
@@ -16,5 +17,8 @@ public final class AbilityTensura {
 
     public AbilityTensura(IEventBus modBus) {
         LOGGER.info("Ability: Tensura initialized");
+        // mod construction - before RegisterEvent, so registration-time cost
+        // decisions are order-safe (core's declare timing contract)
+        TensuraResources.declareMagicules();
     }
 }

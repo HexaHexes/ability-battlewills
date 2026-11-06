@@ -22,6 +22,15 @@ with code adapters only where custom execution behaviour demands it.
   `better_spellcasting`, `irons_spellbooks` - never hard dependencies; all
   integration through soft hooks.
 
+**Resource pairs** (issue #41): `TensuraResources.declareMagicules()` runs at
+mod construction and declares `tensura:magicule` - provider reads the player's
+current magicules from Tensura's existence storage, consumer deducts from the
+same store post-ACTED. The declaration gates on `ModList("tensura")` first, so
+an absent mod skips with a debug line and magicule costs fail closed with
+`no_provider` (core's #92 chain); the typed half lives in `MagiculePair` and is
+resolved only behind that gate. Core pin `1.0.0-alpha.37` carries the
+provider/consumer surface and the gated declare overloads.
+
 **Release plan:** [docs/release-plan.md](https://github.com/HexaHexes/ability-core/blob/main/docs/release-plan.md) - the release train, per-repo checklist, core-before-consumers sequencing and ALPHA_RELEASES state (hub: ability-core).
 
 **Test:** `./gradlew runGameTestServer` - `AbilityTensuraGameTests` (1 test). `expectedTests = 1`
