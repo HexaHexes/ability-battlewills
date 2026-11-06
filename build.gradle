@@ -149,6 +149,21 @@ dependencies {
     compileOnly tensuraMod
     testImplementation tensuraMod
 
+    // GameTest/dev runtime closure for Tensura itself: the dynamic catalog
+    // (#42) reads ARR's category tag files at RegisterEvent and the
+    // coverage gametest proves every id registered, so the gametest runtime
+    // must actually load ARR - plus its required closure (its
+    // neoforge.mods.toml: manascore_* modules come nested inside ManasCore,
+    // then architectury, geckolib, smartbrainlib, terrablender). File ids
+    // from the pack manifest; runtimeOnly puts them on every run's
+    // classpath without touching what main compiles against.
+    runtimeOnly tensuraMod
+    runtimeOnly "curse.maven:manascore-619025:8022425"
+    runtimeOnly "curse.maven:architectury-api-419699:8492726"
+    runtimeOnly "curse.maven:geckolib-388172:8893490"
+    runtimeOnly "curse.maven:smartbrainlib-661293:7055149"
+    runtimeOnly "curse.maven:terrablender-940057:6054947"
+
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

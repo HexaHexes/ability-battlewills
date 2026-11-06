@@ -4,6 +4,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.bitwisemadness.abilitytensura.catalog.BattlewillCatalog;
+import org.bitwisemadness.abilitytensura.catalog.TensuraAbilityCatalog;
 
 /**
  * The mod-bus listener half of Ability: Tensura. Routing is not spelled
@@ -24,9 +25,13 @@ public final class AbilityTensuraEvents {
     private AbilityTensuraEvents() {
     }
 
-    /** Contributes the battlewill catalog (#58) to core's registry. */
+    /**
+     * Contributes the catalogs to core's registry: the battlewills (#58)
+     * and the dynamic skill/magic enumeration (#42 slice 1).
+     */
     @SubscribeEvent
     public static void onRegisterAbilities(RegisterEvent event) {
         BattlewillCatalog.register(event);
+        TensuraAbilityCatalog.register(event);
     }
 }
