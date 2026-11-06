@@ -15,6 +15,7 @@ import org.bitwisemadness.abilitycore.AbilityCore;
 import org.bitwisemadness.abilitycore.activation.ActivationContext;
 import org.bitwisemadness.abilitycore.activation.EligibilityRule;
 import org.bitwisemadness.abilitycore.api.AbilityAvailability;
+import org.bitwisemadness.abilitycore.api.AbilityUnlocks;
 import org.bitwisemadness.abilitycore.api.ActivationOutcome;
 import org.bitwisemadness.abilitycore.api.ActivationRequest;
 import org.bitwisemadness.abilitycore.api.ActivationResult;
@@ -115,6 +116,9 @@ public final class UnlockGate {
         });
         for (ResourceLocation id : ids) {
             AvailabilityProviders.declare(id, UnlockGate::availabilityFor);
+            // The read seam (core#117): consumers ask core, not upstream -
+            // all our ids are declared, so downstream never sees unknown.
+            AbilityUnlocks.declare(id, UnlockGate::unlockAnswer);
         }
         // Removal half: the event is cancelable (pre-removal), so a
         // presence check would still see the skill and lie - its id is the
@@ -162,7 +166,24 @@ public final class UnlockGate {
 
     /** Whether ARR's own storage has the ability learned for this entity. */
     public static boolean isLearned(LivingEntity entity, ResourceLocation id) {
+        if (entity instanceof Player player) {
+            // Routed through core (core#117); unknown for a declared id
+            // means a provider bug - fail closed as not-learned.
+            return AbilityUnlocks.isLearned(player, id).orElse(Boolean.FALSE);
+        }
+        return readLearned(entity, id); // non-player entities: no contract needed
+    }
+
+    /** The raw upstream read - the provider's own source of truth. */
+    private static boolean readLearned(LivingEntity entity, ResourceLocation id) {
         return SkillAPI.getSkillsFrom(entity).getSkill(id).isPresent();
+    }
+
+    /** The contract's provider answer: live read; abstains to unknown without a player. */
+    public static Optional<Boolean> unlockAnswer(Player player, ResourceLocation id) {
+        return player == null
+                ? Optional.empty()
+                : Optional.of(readLearned(player, id));
     }
 
     /** The display half: unknown metrics + the unlock verdict. */

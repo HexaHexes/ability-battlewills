@@ -7,6 +7,7 @@ import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import org.bitwisemadness.abilitycore.AbilityCore;
+import org.bitwisemadness.abilitycore.api.AbilityUnlocks;
 import org.bitwisemadness.abilitycore.api.AvailabilityProviders;
 import org.bitwisemadness.abilitycore.discovery.AbilityDiscovery;
 import org.bitwisemadness.abilitytensura.AbilityTensura;
@@ -70,6 +71,11 @@ public final class AbilityTensuraGameTests {
         for (ResourceLocation id : expected) {
             check(AvailabilityProviders.has(id),
                     "the unlock gate must declare availability for: " + id);
+        }
+        // ...its read seam is declared for every tracked id (core#117)...
+        for (ResourceLocation id : expected) {
+            check(AbilityUnlocks.has(id),
+                    "the unlock provider must be declared for: " + id);
         }
         // ...its activation half sits on core's canonical chain...
         check(AbilityCore.ELIGIBILITY.size() > 0,
