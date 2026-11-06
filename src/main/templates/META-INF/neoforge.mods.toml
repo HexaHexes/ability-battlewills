@@ -31,7 +31,13 @@ config = "${mod_id}.mixins.json"
 [[dependencies.${mod_id}]]
 modId = "ability_core"
 type = "optional"
-versionRange = "[1.0.0-alpha.37,)"
+# alpha.42 = what this builds and tests against (the floor names the gate;
+# the pack runs 42). The resource series reshaped AbilityDefinition's
+# canonical constructor at alpha.34/35/39 (costs list, strategy, amount
+# resolver) - only our test fixtures construct one, so the refresh is a
+# fixture-shape fix; main code (resource pairs) is unaffected. Additive
+# since: alpha.40 slot gate, 41 XP fix, 42 refund counterpart.
+versionRange = "[1.0.0-alpha.42,)"
 ordering = "AFTER"
 side = "BOTH"
 
