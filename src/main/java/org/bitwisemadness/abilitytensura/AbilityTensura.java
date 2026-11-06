@@ -20,5 +20,6 @@ public final class AbilityTensura {
         // mod construction - before RegisterEvent, so registration-time cost
         // decisions are order-safe (core's declare timing contract)
         TensuraResources.declareMagicules();
+        TensuraResources.declareAura();
     }
 }
