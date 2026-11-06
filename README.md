@@ -1,36 +1,48 @@
 # Ability: Tensura
 
-Ability: Tensura adds generic handling for **Tensura: Reincarnated**'s
-Battlewills: the pack's non-magical combat arts, martial techniques bound to
-how you fight, from sword and spear discipline to unarmed brawling, handled
-through datapack definitions.
+Registers **Tensura: Reincarnated**'s Battlewills - the pack's non-magical
+combat arts, martial techniques bound to how you fight, from sword and spear
+discipline to unarmed brawling - as native, datapack-first abilities:
+discovered through Ability Core, unlocked through Tensura's own learning,
+and activated natively first, with the shared Ability Hotbar and combo
+bridges as optional seams rather than requirements. Built for the Tensura
+RPG pack.
 
 ## What it does
 
-*(Design phase, no release yet. The open issues on this repository hold the
-full plan, research tables and open design decisions.)*
-
-- **Weapon styles** - sword, spear and polearm, axe and heavy weapon, ranged,
-  shield and defensive techniques, and unarmed combat as its own style.
-- Techniques are active abilities you trigger, weapon enhancements you apply,
-  and passives that shape the fight.
-- **Progression and cost** - abilities carry resource costs, progression and
-  restrictions, all readable from datapack definitions.
-- Battlewills use native activation first, with hooks for the shared ability
-  hotbar and for combo bridges. Iron's Spells and Better Spellcasting are not
-  hard dependencies.
+- **Catalogs** - all 23 native battlewills plus the skill and magic
+  catalog (332 native abilities from their category tags) registered as
+  Ability Core definitions with discovery and metadata.
+- **Unlock gate** - every registered ability is gated on the Tensura
+  unlock (ManasCore's learned-state read), and unlearnt abilities are
+  removed from the player's bars as they are forgotten.
+- **Native activation parity** - a shared activation service resolves
+  preset slots server-side, so native casting and the ability pipeline
+  agree on what fires; battlewills activate natively first, with the hotbar
+  seam as an addition.
+- **Datapack-first** - definitions, tags, progression and restrictions
+  live in datapack data, so content is editable without code. Iron's
+  Spells and Better Spellcasting are not hard dependencies.
+- The rest of the plan - the style system, passives, weapon enhancements,
+  the additive-art schema and the Ability Hotbar provider adapter - is
+  tracked in this repository's open issues.
 
 ## Dependencies
+
 | | Mod | Why |
 |---|---|---|
-| Required | Minecraft / NeoForge | 1.21.1 / 21.1.259 |
-| Required | Tensura Ability Core | The ability contracts battlewills register against |
-| Optional | Tensura Ability Hotbar | Battlewills appear in the shared hotbar |
-| Optional | Tensura - Better Spellcasting Bridge | Battlewills fire from weapon combos |
+| Required | Minecraft | - |
+| Required | NeoForge | - |
+| Optional | Ability Core | The ability contracts battlewills register against: discovery, metadata, activation (`[1.0.0-alpha.42,)` in the toml); without it the mod carries only its datapack data |
+| Optional | Tensura: Reincarnated | The battlewills themselves and the unlock state the gate reads |
+| Optional | ManasCore | SkillAPI: the unlock gate's learned-state read |
+| Optional | Ability Hotbar | The shared hotbar seam (the provider adapter is tracked in #42); absent = native activation alone |
+| Optional | Tensura - Better Spellcasting Bridge | Battlewills fire from weapon combos; runtime-gated, absent = no combo hooks |
 
 ## Credits
+
 - Built on [NeoForge](https://neoforged.net/).
-- Part of the [Tensura RPG](https://www.curseforge.com/minecraft/mc-mods/tensura-reincarnated) pack ecosystem.
+- Derived from [neoforge-mod-template](https://github.com/HexaHexes/neoforge-mod-template).
 
 ## License
 
