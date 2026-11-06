@@ -52,6 +52,12 @@ neoForge {
         }
     }
 
+    // Contract unit tests (resource pairs, leak/contract fixtures) need MC/DFU/
+    // log4j classes on the test classpath; the template's own tests avoided MC
+    // so it never wired this (same line as core - it resolves against this
+    // extension, not the project).
+    addModdingDependenciesTo sourceSets.test
+
     mods {
         "${mod_id}" {
             sourceSet sourceSets.main
@@ -106,15 +112,36 @@ repositories {
         }
     }
     mavenCentral()
+    maven {
+        // Tensura: Reincarnated (ARR) is never redistributed from here - CurseMaven
+        // serves the vendor's own CurseForge file (AGENTS: compile-only mods use
+        // CurseMaven coordinates).
+        name = 'CurseMaven'
+        url = uri('https://cursemaven.com')
+        content {
+            includeGroup 'curse.maven'
+        }
+    }
 }
 
 dependencies {
     // Shared ability contracts from the core repo (GitHub Packages). compileOnly
     // for main - NeoForge resolves the mod at runtime as a separate mod, never
     // bundled - and on the test runtime classpath for the contract test below.
-    def abilityCore = 'org.bitwisemadness.abilitycore:ability_core:1.0.0-alpha.9'
+    // Deliberate bump (docs/release-plan.md): the resource pairs need core's
+    // provider/consumer surface and the mod-gated declare overloads (#88/#92).
+    def abilityCore = 'org.bitwisemadness.abilitycore:ability_core:1.0.0-alpha.37'
     compileOnly abilityCore
     testImplementation abilityCore
+
+    // Tensura: Reincarnated API for the resource pairs (issue #41): compile-only,
+    // never bundled; the pair gates on ModList("tensura") so an absent mod never
+    // links these classes. CurseForge project 643695, file 8793360 =
+    // tensura-neoforge-2.0.1.3.jar, the pack's shipped build (ids from the pack
+    // manifest; a version-number Modrinth pin resolves the fabric artifact).
+    def tensuraMod = 'curse.maven:tensura-reincarnated-643695:8793360'
+    compileOnly tensuraMod
+    testImplementation tensuraMod
 
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
