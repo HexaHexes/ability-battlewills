@@ -30,6 +30,11 @@ an absent mod skips with a debug line and magicule costs fail closed with
 `no_provider` (core's #92 chain); the typed half lives in `MagiculePair` and is
 resolved only behind that gate. Core pin `1.0.0-alpha.37` carries the
 provider/consumer surface and the gated declare overloads.
+Issue #40 adds `tensura:aura` the same way through `AuraPair` - current aura
+from the same existence storage, so no ManasCore type enters either pair's
+signature chain and ADR-010's GPLv3 linkage question does not trigger here.
+Both pairs price EXTERNAL abilities only; battlewills' native single-charge
+path (ADR-002) is untouched.
 
 **Release plan:** [docs/release-plan.md](https://github.com/HexaHexes/ability-core/blob/main/docs/release-plan.md) - the release train, per-repo checklist, core-before-consumers sequencing and ALPHA_RELEASES state (hub: ability-core).
 

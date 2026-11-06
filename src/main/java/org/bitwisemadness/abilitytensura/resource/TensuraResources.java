@@ -34,11 +34,36 @@ public final class TensuraResources {
     /** The magicule resource id (pseudocore#174 queries this pair by name). */
     public static final String MAGICULE = "tensura:magicule";
 
+    /** The aura resource id (battlewill prices; issue #40). */
+    public static final String AURA = "tensura:aura";
+
     static final String REQUIRED_MOD_ID = "tensura";
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private TensuraResources() {
+    }
+
+    /**
+     * Declares the aura provider/consumer pair (issue #40): current aura from
+     * the same Tensura existence storage - no ManasCore type appears anywhere
+     * in the signature chain, so ADR-010's GPLv3 linkage question does not
+     * trigger for this pair.
+     *
+     * @return true when declared, false when skipped (Tensura absent)
+     */
+    public static boolean declareAura() {
+        return declareAura(isTensuraLoaded());
+    }
+
+    /** Presence-resolved seam (package-private, tests), as for magicules. */
+    static boolean declareAura(boolean tensuraPresent) {
+        if (!tensuraPresent) {
+            LOGGER.debug("Aura pair '{}' skipped: {} is not loaded", AURA, REQUIRED_MOD_ID);
+            return false;
+        }
+        AuraPair.declare();
+        return true;
     }
 
     /**
@@ -63,6 +88,13 @@ public final class TensuraResources {
         }
         MagiculePair.declare();
         return true;
+    }
+
+    /** Amount-vs-balance verdict for aura (fixtures): pure, as for magicules. */
+    static Affordability auraVerdict(double balance, double amount) {
+        return balance >= amount
+                ? Affordability.sufficient(AURA, amount)
+                : Affordability.insufficient(AURA, amount);
     }
 
     /** Amount-vs-balance verdict: the pure half of the read side (fixtures). */
