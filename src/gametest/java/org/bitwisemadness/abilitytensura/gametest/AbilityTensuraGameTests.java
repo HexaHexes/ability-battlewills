@@ -9,6 +9,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import org.bitwisemadness.abilitycore.AbilityCore;
 import org.bitwisemadness.abilitycore.api.AbilityUnlocks;
 import org.bitwisemadness.abilitycore.api.AvailabilityProviders;
+import org.bitwisemadness.abilitycore.api.CooldownOwners;
 import org.bitwisemadness.abilitycore.discovery.AbilityDiscovery;
 import org.bitwisemadness.abilitytensura.AbilityTensura;
 import org.bitwisemadness.abilitytensura.catalog.BattlewillCatalog;
@@ -76,6 +77,12 @@ public final class AbilityTensuraGameTests {
         for (ResourceLocation id : expected) {
             check(AbilityUnlocks.has(id),
                     "the unlock provider must be declared for: " + id);
+        }
+        // ...and every tracked id defers its cooldown to ARR through
+        // core's handler contract (alpha.45).
+        for (ResourceLocation id : expected) {
+            check(CooldownOwners.ownerOf(id) == CooldownOwners.Owner.HANDLER,
+                    "the cooldown handler must be declared for: " + id);
         }
         // ...its activation half sits on core's canonical chain...
         check(AbilityCore.ELIGIBILITY.size() > 0,
