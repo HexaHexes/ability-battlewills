@@ -6,6 +6,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
+import org.bitwisemadness.abilitytensura.activation.TensuraActivation;
 import org.bitwisemadness.abilitytensura.catalog.BattlewillCatalog;
 import org.bitwisemadness.abilitytensura.catalog.TensuraAbilityCatalog;
 import org.bitwisemadness.abilitytensura.gate.UnlockGate;
@@ -40,13 +41,15 @@ public final class AbilityTensuraEvents {
     }
 
     /**
-     * Registers the unlock gate after every catalog id is tracked (the
-     * registry phase completes before common setup): the eligibility rule,
-     * the per-id availability declarations and the REMOVE_SKILL listener.
+     * Registers the unlock gate and the activation handlers after every
+     * catalog id is tracked (the registry phase completes before common
+     * setup): eligibility rule, availability declarations, the
+     * REMOVE_SKILL listener, and one shared NATIVE handler per ability.
      */
     @SubscribeEvent
     public static void onCommonSetup(FMLCommonSetupEvent event) {
         UnlockGate.register();
+        TensuraActivation.registerHandlers();
     }
 
     /**
