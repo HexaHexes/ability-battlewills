@@ -124,6 +124,23 @@ repositories {
     }
 }
 
+// ManasCore ships as a monolith whose API lives in nested jars (JarJar):
+// the compile classpath needs the nested skill module (SkillAPI), while the
+// runs get the outer jar and FML unpacks the nested mods itself. Extracted
+// at build time - never vendored into the repo (DEC-06: GPLv3 components are
+// referenced, not redistributed).
+configurations {
+    manascoreApi
+}
+
+def extractManascoreApi = tasks.register('extractManascoreApi', Copy) {
+    from({ zipTree(configurations.manascoreApi.singleFile) })
+    // Every nested module: SkillAPI's signatures reach across them (Storage
+    // lives in manascore-storage, the registrar glue in manascore-architectury).
+    include 'META-INF/jars/*.jar'
+    into layout.buildDirectory.dir('manascore-api')
+}
+
 dependencies {
     // Shared ability contracts from the core repo (GitHub Packages). compileOnly
     // for main - NeoForge resolves the mod at runtime as a separate mod, never
@@ -157,8 +174,15 @@ dependencies {
     // then architectury, geckolib, smartbrainlib, terrablender). File ids
     // from the pack manifest; runtimeOnly puts them on every run's
     // classpath without touching what main compiles against.
+    def manascoreMod = 'curse.maven:manascore-619025:8022425'
+    add('manascoreApi', manascoreMod) // nested skill module extracted for compilation (see extractManascoreApi)
+    def manascoreApiFiles = fileTree(layout.buildDirectory.dir('manascore-api')) {
+        include 'META-INF/jars/*.jar'
+    }
+    compileOnly manascoreApiFiles.builtBy(extractManascoreApi) // SkillAPI: the unlock gate's learned read
+    testImplementation manascoreApiFiles.builtBy(extractManascoreApi)
     runtimeOnly tensuraMod
-    runtimeOnly "curse.maven:manascore-619025:8022425"
+    runtimeOnly manascoreMod
     runtimeOnly "curse.maven:architectury-api-419699:8492726"
     runtimeOnly "curse.maven:geckolib-388172:8893490"
     runtimeOnly "curse.maven:smartbrainlib-661293:7055149"

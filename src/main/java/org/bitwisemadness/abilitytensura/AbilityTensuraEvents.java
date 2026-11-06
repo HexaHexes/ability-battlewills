@@ -2,9 +2,11 @@ package org.bitwisemadness.abilitytensura;
 
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.bitwisemadness.abilitytensura.catalog.BattlewillCatalog;
 import org.bitwisemadness.abilitytensura.catalog.TensuraAbilityCatalog;
+import org.bitwisemadness.abilitytensura.gate.UnlockGate;
 
 /**
  * The mod-bus listener half of Ability: Tensura. Routing is not spelled
@@ -33,5 +35,15 @@ public final class AbilityTensuraEvents {
     public static void onRegisterAbilities(RegisterEvent event) {
         BattlewillCatalog.register(event);
         TensuraAbilityCatalog.register(event);
+    }
+
+    /**
+     * Registers the unlock gate after every catalog id is tracked (the
+     * registry phase completes before common setup): the eligibility rule
+     * and the per-id availability declarations.
+     */
+    @SubscribeEvent
+    public static void onCommonSetup(FMLCommonSetupEvent event) {
+        UnlockGate.register();
     }
 }

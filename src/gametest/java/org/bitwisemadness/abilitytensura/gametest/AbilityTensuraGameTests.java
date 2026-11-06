@@ -6,6 +6,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
+import org.bitwisemadness.abilitycore.AbilityCore;
+import org.bitwisemadness.abilitycore.api.AvailabilityProviders;
 import org.bitwisemadness.abilitycore.discovery.AbilityDiscovery;
 import org.bitwisemadness.abilitytensura.AbilityTensura;
 import org.bitwisemadness.abilitytensura.catalog.BattlewillCatalog;
@@ -63,6 +65,15 @@ public final class AbilityTensuraGameTests {
         check(AbilityDiscovery.all().size() == expected.size(),
                 "registry must hold exactly the catalogs, got "
                         + AbilityDiscovery.all().size() + " expected " + expected.size());
+
+        // The unlock gate's display half is wired for every tracked id...
+        for (ResourceLocation id : expected) {
+            check(AvailabilityProviders.has(id),
+                    "the unlock gate must declare availability for: " + id);
+        }
+        // ...and its activation half sits on core's canonical chain.
+        check(AbilityCore.ELIGIBILITY.size() > 0,
+                "the unlock gate must register an eligibility rule");
         helper.succeed();
     }
 

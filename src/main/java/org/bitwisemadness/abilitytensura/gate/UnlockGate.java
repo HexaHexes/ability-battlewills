@@ -1,0 +1,141 @@
+package org.bitwisemadness.abilitytensura.gate;
+
+import io.github.manasmods.manascore.skill.api.SkillAPI;
+import java.util.LinkedHashSet;
+import java.util.Optional;
+import java.util.Set;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.neoforged.fml.ModList;
+import org.bitwisemadness.abilitycore.AbilityCore;
+import org.bitwisemadness.abilitycore.activation.ActivationContext;
+import org.bitwisemadness.abilitycore.activation.EligibilityRule;
+import org.bitwisemadness.abilitycore.api.AbilityAvailability;
+import org.bitwisemadness.abilitycore.api.ActivationOutcome;
+import org.bitwisemadness.abilitycore.api.ActivationRequest;
+import org.bitwisemadness.abilitycore.api.ActivationResult;
+import org.bitwisemadness.abilitycore.api.ActivationSource;
+import org.bitwisemadness.abilitycore.api.AvailabilityProviders;
+import org.bitwisemadness.abilitycore.api.AvailabilityState;
+import org.bitwisemadness.abilitycore.api.Metric;
+
+/**
+ * The unlock gate (owner directive, 2026-11-06): <b>every ability this mod
+ * registers is gated on the player having learned it in Tensura.</b> Three
+ * halves, each on its natural seam:
+ *
+ * <ul>
+ *   <li><b>Activation</b> - an {@link EligibilityRule} on
+ *       {@link AbilityCore#ELIGIBILITY} (the hotbar's {@code CoreScopeCompat}
+ *       pattern: registered at common setup, {@code appliesTo() = Set.of()}
+ *       means every source) refuses {@link ActivationOutcome#REFUSED_RESTRICTED}
+ *       for a tracked id the player has not learned. ARR's own
+ *       {@code startHoldSkill} refuses unlearned skills too (getSkill empty
+ *       -&gt; false, #52 evidence) - this rule is the uniform, explicit gate
+ *       ahead of it, so refusals carry the right vocabulary no matter which
+ *       consumer fired.</li>
+ *   <li><b>Display</b> - {@link AvailabilityProviders#declare} per tracked
+ *       id: not learned -&gt; {@code unavailable("not unlocked in Tensura")}
+ *       (the bar's dim verdict); metrics stay {@code unknown} - per-ability
+ *       cooldown/cost overlays are #42's overlay slice, not this gate's.</li>
+ *   <li><b>Assignment/menu filtering</b> - no seam exists upstream today
+ *       (the menu enumerates {@code AbilityDiscovery.entries()} unfiltered;
+ *       {@code AssignAbilityPayload.handle} validates nothing per-player);
+ *       filed as an ability-hotbar issue. Until it lands, assignment of an
+ *       unlearned ability is possible but useless - activation refuses.</li>
+ * </ul>
+ *
+ * <p>The decision core ({@link #refusalFor}) is pure and fixture-able -
+ * {@code CoreScopeCompat}'s shape. The ARR read
+ * ({@code SkillAPI.getSkillsFrom(player).getSkill(id)}) lives only in the
+ * rule/provider bodies, so core stays upstream-free (the leak-gate rule)
+ * and the pure half never loads ManasCore. Learned state is read through
+ * ARR's own storage on whichever side asks (#52: client skill state is
+ * synced - ARR's own screens render it client-side; in-game check pending).</p>
+ */
+public final class UnlockGate {
+
+    /**
+     * Every id our catalogs registered this session, accumulated during the
+     * {@code RegisterEvent} phase (which completes before common setup, so
+     * the snapshot below is complete when it is taken). Exact ids beat
+     * category matching: nothing outside our catalogs is ever gated.
+     */
+    private static final Set<ResourceLocation> TRACKED = new LinkedHashSet<>();
+
+    private UnlockGate() {
+    }
+
+    /** Catalogs call this as they register an id (RegisterEvent phase). */
+    public static void track(ResourceLocation id) {
+        TRACKED.add(id);
+    }
+
+    /**
+     * Common setup: the eligibility rule and the availability declarations,
+     * gated on Tensura being present (without ARR there is no learned state
+     * and no ungated consumer path - the pairs' gate pattern). Rules run in
+     * registration order; a refusal short-circuits the pipeline.
+     */
+    public static void register() {
+        if (ModList.get() == null || !ModList.get().isLoaded("tensura")) {
+            return;
+        }
+        Set<ResourceLocation> ids = Set.copyOf(TRACKED);
+        AbilityCore.ELIGIBILITY.register(new EligibilityRule() {
+            @Override
+            public Optional<ActivationResult> evaluate(ActivationRequest request, ServerPlayer player,
+                    ActivationContext context) {
+                ResourceLocation id = request.abilityId();
+                if (!ids.contains(id)) {
+                    return Optional.empty(); // not one of ours - never gate
+                }
+                return refusalFor(id, isLearned(player, id));
+            }
+
+            @Override
+            public Set<ActivationSource> appliesTo() {
+                // Every source: the unlock is a property of the player and
+                // the ability, not of how the activation arrived.
+                return Set.of();
+            }
+        });
+        for (ResourceLocation id : ids) {
+            AvailabilityProviders.declare(id, UnlockGate::availabilityFor);
+        }
+    }
+
+    /**
+     * The gate's decision, pure so it is fixture-able: a tracked id the
+     * player has not learned refuses {@code REFUSED_RESTRICTED}; everything
+     * else passes through untouched.
+     *
+     * @param id      the ability being activated
+     * @param learned whether ARR says the player has it
+     * @return empty = permitted; present = terminal refusal
+     */
+    public static Optional<ActivationResult> refusalFor(ResourceLocation id, boolean learned) {
+        if (!TRACKED.contains(id) || learned) {
+            return Optional.empty();
+        }
+        return Optional.of(ActivationResult.refused(ActivationOutcome.REFUSED_RESTRICTED));
+    }
+
+    /** Whether ARR's own storage has the ability learned for this entity. */
+    public static boolean isLearned(LivingEntity entity, ResourceLocation id) {
+        return SkillAPI.getSkillsFrom(entity).getSkill(id).isPresent();
+    }
+
+    /** The display half: unknown metrics + the unlock verdict. */
+    private static AbilityAvailability availabilityFor(Player player, ResourceLocation id) {
+        boolean learned = player != null && isLearned(player, id);
+        return new AbilityAvailability(
+                Metric.unknown(),
+                Metric.unknown(),
+                learned
+                        ? AvailabilityState.available()
+                        : AvailabilityState.unavailable("not unlocked in Tensura"));
+    }
+}
