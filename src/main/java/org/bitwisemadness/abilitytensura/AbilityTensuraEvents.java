@@ -1,8 +1,10 @@
 package org.bitwisemadness.abilitytensura;
 
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import org.bitwisemadness.abilitytensura.catalog.BattlewillCatalog;
 import org.bitwisemadness.abilitytensura.catalog.TensuraAbilityCatalog;
@@ -39,11 +41,22 @@ public final class AbilityTensuraEvents {
 
     /**
      * Registers the unlock gate after every catalog id is tracked (the
-     * registry phase completes before common setup): the eligibility rule
-     * and the per-id availability declarations.
+     * registry phase completes before common setup): the eligibility rule,
+     * the per-id availability declarations and the REMOVE_SKILL listener.
      */
     @SubscribeEvent
     public static void onCommonSetup(FMLCommonSetupEvent event) {
         UnlockGate.register();
+    }
+
+    /**
+     * Login sweep of the removal directive: unlearnt assignments leave the
+     * player before their first snapshot reaches the client.
+     */
+    @SubscribeEvent
+    public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            UnlockGate.reconcile(player);
+        }
     }
 }
