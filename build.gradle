@@ -133,6 +133,12 @@ dependencies {
     def abilityCore = 'org.bitwisemadness.abilitycore:ability_core:1.0.0-alpha.42'
     compileOnly abilityCore
     testImplementation abilityCore
+    // Core is a runtime mod for every dev run and the GameTest server: the
+    // battlewill catalog registers on core's registry at boot (#10), so the
+    // gametest runtime must actually load ability_core - compileOnly alone
+    // left it off every runtime classpath (the pair gates masked that while
+    // Tensura's absence skipped the only core-touching code).
+    runtimeOnly abilityCore
 
     // Tensura: Reincarnated API for the resource pairs (issue #41): compile-only,
     // never bundled; the pair gates on ModList("tensura") so an absent mod never
