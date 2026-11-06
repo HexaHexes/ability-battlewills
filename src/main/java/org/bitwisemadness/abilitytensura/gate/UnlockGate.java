@@ -1,6 +1,8 @@
 package org.bitwisemadness.abilitytensura.gate;
 
+import dev.architectury.event.EventResult;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
+import io.github.manasmods.manascore.skill.api.SkillEvents;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -105,6 +107,32 @@ public final class UnlockGate {
         for (ResourceLocation id : ids) {
             AvailabilityProviders.declare(id, UnlockGate::availabilityFor);
         }
+        // Removal half: the event is cancelable (pre-removal), so a
+        // presence check would still see the skill and lie - its id is the
+        // authority. Guarded callsite (hotbar#120).
+        SkillEvents.REMOVE_SKILL.register((instance, entity, changer) -> {
+            if (entity instanceof ServerPlayer player
+                    && ModList.get().isLoaded("ability_hotbar")) {
+                ResourceLocation removed = instance.getSkillId();
+                HotbarHygiene.apply(player, id -> id.equals(removed));
+            }
+            return EventResult.pass();
+        });
+    }
+
+    /**
+     * Login sweep (the offline/legacy half of the removal directive): drop
+     * any tracked assignment the player no longer has - forgets that fired
+     * while offline, assignments made before this gate existed, crafted
+     * slots from the hotbar#135 hole. Guarded callsite (hotbar#120); no-op
+     * without Tensura or hotbar.
+     */
+    public static void reconcile(ServerPlayer player) {
+        if (ModList.get() == null || !ModList.get().isLoaded("tensura")
+                || !ModList.get().isLoaded("ability_hotbar")) {
+            return;
+        }
+        HotbarHygiene.apply(player, id -> TRACKED.contains(id) && !isLearned(player, id));
     }
 
     /**

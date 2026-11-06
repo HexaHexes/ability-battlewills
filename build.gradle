@@ -111,6 +111,16 @@ repositories {
             password = System.getenv('GITHUB_TOKEN') ?: project.findProperty('gpr.key')
         }
     }
+    maven {
+        // Soft hook (REPO.md: ability_hotbar optional): the unlock gate's
+        // assignment hygiene reads/writes the hotbar's public bar-state.
+        name = 'AbilityHotbarPackages'
+        url = uri('https://maven.pkg.github.com/HexaHexes/ability-hotbar')
+        credentials {
+            username = System.getenv('GITHUB_ACTOR') ?: project.findProperty('gpr.user')
+            password = System.getenv('GITHUB_TOKEN') ?: project.findProperty('gpr.key')
+        }
+    }
     mavenCentral()
     maven {
         // Tensura: Reincarnated (ARR) is never redistributed from here - CurseMaven
@@ -191,6 +201,18 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Soft hook (REPO.md: ability_hotbar optional): the unlock gate's
+    // assignment hygiene writes the hotbar's public bar-state and echoes
+    // through its public sync. compileOnly + test classpath only - never on
+    // a runtime: "optional" means absent must keep working (the gametest
+    // boots without hotbar as the living proof, and every callsite sits
+    // behind a ModList gate - the hotbar#120 linkage lesson).
+    def abilityHotbar = 'org.bitwisemadness.abilityhotbar:ability_hotbar:1.0.0-alpha.55'
+    compileOnly abilityHotbar
+    testImplementation abilityHotbar
+    // EventResult + Event for the ManasCore REMOVE_SKILL listener (the
+    // architectury event API the skill events are typed against).
+    compileOnly "curse.maven:architectury-api-419699:8492726"
 }
 
 test {
