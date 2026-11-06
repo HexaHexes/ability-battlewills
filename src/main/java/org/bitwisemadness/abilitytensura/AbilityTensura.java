@@ -21,5 +21,6 @@ public final class AbilityTensura {
         // decisions are order-safe (core's declare timing contract)
         TensuraResources.declareMagicules();
         TensuraResources.declareAura();
+        TensuraResources.declareEP();
     }
 }

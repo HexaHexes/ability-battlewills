@@ -37,11 +37,41 @@ public final class TensuraResources {
     /** The aura resource id (battlewill prices; issue #40). */
     public static final String AURA = "tensura:aura";
 
+    /**
+     * The EP resource id (issue #43). EP is a direct stored balance on the
+     * existence storage (javap: getEP/setEP) - the entity_existence datapack
+     * carries spawn capacity bounds (min/max aura/magicule), not a
+     * composite rule, so this pair reads and writes EP itself.
+     */
+    public static final String EP = "tensura:ep";
+
     static final String REQUIRED_MOD_ID = "tensura";
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private TensuraResources() {
+    }
+
+    /**
+     * Declares the EP provider/consumer pair (issue #43): the direct stored
+     * balance from the same Tensura existence storage - no component
+     * dependency on the aura/magicule pairs (the composite premise is
+     * superseded, recorded on the issue).
+     *
+     * @return true when declared, false when skipped (Tensura absent)
+     */
+    public static boolean declareEP() {
+        return declareEP(isTensuraLoaded());
+    }
+
+    /** Presence-resolved seam (package-private, tests), as for the others. */
+    static boolean declareEP(boolean tensuraPresent) {
+        if (!tensuraPresent) {
+            LOGGER.debug("EP pair '{}' skipped: {} is not loaded", EP, REQUIRED_MOD_ID);
+            return false;
+        }
+        EPPair.declare();
+        return true;
     }
 
     /**
@@ -88,6 +118,13 @@ public final class TensuraResources {
         }
         MagiculePair.declare();
         return true;
+    }
+
+    /** Amount-vs-balance verdict for EP (fixtures): pure, as for the others. */
+    static Affordability epVerdict(double balance, double amount) {
+        return balance >= amount
+                ? Affordability.sufficient(EP, amount)
+                : Affordability.insufficient(EP, amount);
     }
 
     /** Amount-vs-balance verdict for aura (fixtures): pure, as for magicules. */

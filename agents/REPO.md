@@ -33,8 +33,13 @@ provider/consumer surface and the gated declare overloads.
 Issue #40 adds `tensura:aura` the same way through `AuraPair` - current aura
 from the same existence storage, so no ManasCore type enters either pair's
 signature chain and ADR-010's GPLv3 linkage question does not trigger here.
-Both pairs price EXTERNAL abilities only; battlewills' native single-charge
-path (ADR-002) is untouched.
+Issue #43 adds `tensura:ep` through `EPPair` over EP's **direct** balance
+(`getEP`/`setEP`) - the composite premise is superseded (the
+`entity_existence` datapack carries spawn capacity bounds, not an EP rule),
+so this pair has no component dependency on the other two.
+All three pairs price EXTERNAL abilities only; battlewills' native
+single-charge path (ADR-002) is untouched. The three pair classes are
+byte-equivalent mirrors pending the shared-base extraction (#49).
 
 **Release plan:** [docs/release-plan.md](https://github.com/HexaHexes/ability-core/blob/main/docs/release-plan.md) - the release train, per-repo checklist, core-before-consumers sequencing and ALPHA_RELEASES state (hub: ability-core).
 
