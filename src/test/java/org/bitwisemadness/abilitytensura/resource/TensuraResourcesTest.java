@@ -53,9 +53,9 @@ class TensuraResourcesTest {
             ResourceLocation.fromNamespaceAndPath("tensura", "skill");
     private static final ResourceCost COST = new ResourceCost(TensuraResources.MAGICULE, 10.0);
 
-    private static final Function<ServerPlayer, Double> ORIGINAL_READ = MagiculePair.balanceRead;
+    private static final Function<ServerPlayer, Double> ORIGINAL_READ = MagiculePair.PAIR.balanceRead;
     private static final BiConsumer<ServerPlayer, Double> ORIGINAL_WRITE =
-            MagiculePair.balanceWrite;
+            MagiculePair.PAIR.balanceWrite;
 
     private ActivationHandlerRegistry handlers;
     private ActivationPipeline pipeline;
@@ -83,8 +83,8 @@ class TensuraResourcesTest {
         AbilityRegistries.installRegistryForTests(previousRegistry);
         ResourceProviders.remove(TensuraResources.MAGICULE);
         ResourceConsumers.remove(TensuraResources.MAGICULE);
-        MagiculePair.balanceRead = ORIGINAL_READ;
-        MagiculePair.balanceWrite = ORIGINAL_WRITE;
+        MagiculePair.PAIR.balanceRead = ORIGINAL_READ;
+        MagiculePair.PAIR.balanceWrite = ORIGINAL_WRITE;
         trace.clear();
         writes.clear();
     }
@@ -151,8 +151,8 @@ class TensuraResourcesTest {
     void magiculeCostedAbilityChargesExactlyOnceEndToEnd() {
         // issue #41 AC: through ResourceChargeStep, post-ACTED, once, exact
         TensuraResources.declareMagicules(true);
-        MagiculePair.balanceRead = player -> 100.0;
-        MagiculePair.balanceWrite = (player, value) -> writes.add(value);
+        MagiculePair.PAIR.balanceRead = player -> 100.0;
+        MagiculePair.PAIR.balanceWrite = (player, value) -> writes.add(value);
         registerActingHandler();
 
         var result = run();
