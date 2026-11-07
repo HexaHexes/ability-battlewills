@@ -13,6 +13,7 @@ import org.bitwisemadness.abilitycore.AbilityCore;
 import org.bitwisemadness.abilitycore.api.AbilityUnlocks;
 import org.bitwisemadness.abilitycore.api.ActivationOutcome;
 import org.bitwisemadness.abilitycore.api.AvailabilityProviders;
+import org.bitwisemadness.abilitycore.api.ChargingModel;
 import org.bitwisemadness.abilitycore.api.CooldownOwners;
 import org.bitwisemadness.abilitycore.api.ModeChangeHandlers;
 import org.bitwisemadness.abilitycore.api.ModeChangeRequest;
@@ -111,6 +112,35 @@ public final class AbilityTensuraGameTests {
         for (ResourceLocation id : expected) {
             check(AbilityCore.HANDLERS.get(id).isPresent(),
                     "the activation service must register a handler for: " + id);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * The cost-deferral gate (the native-economy rule): every catalog art
+     * carries <b>empty costs</b> and a <b>NATIVE</b> charging model -
+     * Tensura: Reincarnated prices, charges and regenerates aura and
+     * magicule itself, so core must never price, affordability-gate, or
+     * charge these ids. A cost or an EXTERNAL model creeping into the
+     * catalog fails the run (the #12 "no pre-charge" code gate, now
+     * covering all 355 arts).
+     */
+    @GameTest(template = "empty")
+    public static void catalogDefersCostsToTensura(GameTestHelper helper) {
+        check(ModList.get().isLoaded("tensura"),
+                "Tensura must be staged for the cost-deferral test");
+        var expected = new java.util.HashSet<>(TensuraAbilityCatalog.expectedIds());
+        for (String path : BattlewillCatalog.paths()) {
+            expected.add(BattlewillCatalog.idFor(path));
+        }
+        for (ResourceLocation id : expected) {
+            var definition = AbilityDiscovery.get(id).orElseThrow();
+            check(definition.costs().isEmpty(),
+                    "costs must defer to Tensura: Reincarnated for: " + id);
+            check(AbilityCore.HANDLERS.get(id).isPresent(),
+                    "the activation handler must exist for: " + id);
+            check(AbilityCore.HANDLERS.modelOf(id) == ChargingModel.NATIVE,
+                    "core must never charge a native art (NATIVE model): " + id);
         }
         helper.succeed();
     }
