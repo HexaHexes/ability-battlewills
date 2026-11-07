@@ -36,6 +36,10 @@ public final class TrsMenuBridge {
         "com.japaeditor.tensuraevolution.client.CategoryActionScreen",
         "com.japaeditor.tensuraevolution.client.DirectSkillLoadoutScreen",
         "com.japaeditor.tensuraevolution.client.EvolutionSkillLoadoutScreen",
+        // the status screen's "Equipar skills" button lands here too (its
+        // PT-BR strings hid it from the first pass) - the second entry to
+        // their equip surface, opened from StatusScreen/EvolutionMainScreen
+        "com.japaeditor.tensuraevolution.client.SkillCategoryPickerScreen",
     };
 
     private TrsMenuBridge() {
