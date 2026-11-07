@@ -24,6 +24,11 @@ RPG pack.
   Ability Core's mode-change contract into ARR's own cycle packet
   (per-slot mode presets included), so both paths move the same native
   state (the keybind and its transport ride the Ability Hotbar). 
+- **Native economy** - skill, magic and battlewill costs defer entirely
+  to Tensura: Reincarnated: the catalog carries no prices, and the
+  activation pipeline never charges or affordability-gates these arts -
+  Tensura pays and regenerates aura and magicule itself, so this pack
+  adds no regeneration either.
 - **Datapack-first** - definitions, tags, progression and restrictions
   live in datapack data, so content is editable without code. Iron's
   Spells and Better Spellcasting are not hard dependencies.
