@@ -16,6 +16,7 @@ import org.bitwisemadness.abilitycore.api.AvailabilityProviders;
 import org.bitwisemadness.abilitycore.api.CooldownOwners;
 import org.bitwisemadness.abilitycore.api.ModeChangeHandlers;
 import org.bitwisemadness.abilitycore.api.ModeChangeRequest;
+import org.bitwisemadness.abilitycore.api.VisibilityHandlers;
 import org.bitwisemadness.abilitycore.discovery.AbilityDiscovery;
 import org.bitwisemadness.abilitytensura.AbilityTensura;
 import org.bitwisemadness.abilitytensura.catalog.BattlewillCatalog;
@@ -96,6 +97,12 @@ public final class AbilityTensuraGameTests {
             check(ModeChangeHandlers.has(id),
                     "the mode-change handler must be registered for: " + id);
         }
+        // ...and tensura's own menu visibility rule is wired for every
+        // tracked id (core#124: unlocked-gated listing).
+        for (ResourceLocation id : expected) {
+            check(VisibilityHandlers.has(id),
+                    "the visibility handler must be declared for: " + id);
+        }
         // ...its activation half sits on core's canonical chain...
         check(AbilityCore.ELIGIBILITY.size() > 0,
                 "the unlock gate must register an eligibility rule");
@@ -141,5 +148,24 @@ public final class AbilityTensuraGameTests {
         var profile = new GameProfile(java.util.UUID.randomUUID(), "ModeIntentProbe");
         return new ServerPlayer(server, helper.getLevel(), profile,
                 ClientInformation.createDefault());
+    }
+
+    /**
+     * Tensura's visibility rule in action (core#124): an unlearned art
+     * hides for a live player, while an unknown context (null player)
+     * keeps it listed - unknown never hides (hotbar#153's never-guess).
+     */
+    @GameTest(template = "empty")
+    public static void menuVisibilityHidesUnlearnedArts(GameTestHelper helper) {
+        check(ModList.get().isLoaded("tensura"),
+                "Tensura must be staged for the visibility test (core#124)");
+        ServerPlayer player = mockPlayer(helper);
+        ResourceLocation id = TensuraAbilityCatalog.expectedIds().iterator().next();
+
+        check(!VisibilityHandlers.visible(player, id),
+                "an unlearned art must hide for a live player: " + id);
+        check(VisibilityHandlers.visible(null, id),
+                "an unknown context must never hide the art: " + id);
+        helper.succeed();
     }
 }
