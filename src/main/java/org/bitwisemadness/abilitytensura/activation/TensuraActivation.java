@@ -1,17 +1,24 @@
 package org.bitwisemadness.abilitytensura.activation;
 
+import com.mojang.logging.LogUtils;
+import io.github.manasmods.manascore.skill.api.ManasSkill;
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
+import io.github.manasmods.tensura.ability.TensuraSkill;
 import io.github.manasmods.tensura.network.c2s.RequestAbilityModeChangePacket;
 import io.github.manasmods.tensura.storage.TensuraStorages;
 import io.github.manasmods.tensura.storage.ability.AbilitySlot;
 import io.github.manasmods.tensura.storage.ability.IAbility;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.fml.ModList;
 import org.bitwisemadness.abilitycore.AbilityCore;
+import org.bitwisemadness.abilitycore.api.AbilityModes;
 import org.bitwisemadness.abilitycore.api.ActivationOutcome;
 import org.bitwisemadness.abilitycore.api.ActivationRequest;
 import org.bitwisemadness.abilitycore.api.ActivationResult;
@@ -19,7 +26,9 @@ import org.bitwisemadness.abilitycore.api.ChargingModel;
 import org.bitwisemadness.abilitycore.api.CooldownOwners;
 import org.bitwisemadness.abilitycore.api.ModeChangeHandlers;
 import org.bitwisemadness.abilitycore.api.ModeChangeRequest;
+import org.bitwisemadness.abilitycore.api.ModeOwners;
 import org.bitwisemadness.abilitytensura.gate.UnlockGate;
+import org.slf4j.Logger;
 
 /**
  * The single shared Tensura activation service (#42's selected approach:
@@ -67,6 +76,8 @@ import org.bitwisemadness.abilitytensura.gate.UnlockGate;
  */
 public final class TensuraActivation {
 
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     private TensuraActivation() {
     }
 
@@ -90,6 +101,12 @@ public final class TensuraActivation {
             // intent here and ARR's native body moves the mode - no second
             // mode logic exists in this repo.
             ModeChangeHandlers.register(id, TensuraActivation::changeMode);
+            // The mode vocabulary + live projection (core#113): what
+            // hotbar#29's resolver validates stored modes against and what
+            // the mode keybind cycles/displays (single-mode arts declare none).
+            if (declareModes(id)) {
+                ModeOwners.declareNative(id, TensuraActivation::modeProjection);
+            }
         }
     }
 
@@ -198,6 +215,85 @@ public final class TensuraActivation {
         return ActivationResult.refused(instance.getModes() <= 1
                 ? ActivationOutcome.REFUSED_UNAVAILABLE
                 : ActivationOutcome.REFUSED_RESTRICTED);
+    }
+
+    /**
+     * Declares the mode vocabulary for one catalog id (core#113 - what
+     * hotbar#29's resolver validates stored modes against and what the mode
+     * keybind cycles): non-empty vocabulary declares it; an empty one means
+     * not cycleable (single-mode, non-TensuraSkill) or not expressible
+     * (uniform/blank ids upstream - skipped with a log line instead of
+     * tripping core's loud duplicate rejection; upstream data must never
+     * crash setup).
+     *
+     * @return true when a vocabulary was declared (the projection pairs with it)
+     */
+    private static boolean declareModes(ResourceLocation id) {
+        List<AbilityModes.Mode> modes = vocabularyFor(id,
+                SkillAPI.getSkillRegistry().get(id));
+        if (modes.isEmpty()) {
+            return false;
+        }
+        AbilityModes.declare(id, modes);
+        return true;
+    }
+
+    /**
+     * The mode vocabulary for one probed skill - the SINGLE source the
+     * declaration and the coverage fixture both read (they can never
+     * drift): a default instance supplies the count and the ids
+     * (bytecode-pinned name key: skillPath + "_" + modeId); empty when the
+     * skill is not a TensuraSkill, has one mode, or offers no distinct
+     * non-blank ids (logged - core would reject those loudly). Public so
+     * the coverage fixture reads the very same rule.
+     */
+    public static List<AbilityModes.Mode> vocabularyFor(ResourceLocation id, ManasSkill skill) {
+        if (!(skill instanceof TensuraSkill tensuraSkill)) {
+            return List.of();
+        }
+        ManasSkillInstance probe = skill.createDefaultInstance();
+        int count = probe.getModes();
+        if (count <= 1) {
+            return List.of();
+        }
+        List<AbilityModes.Mode> modes = new ArrayList<>(count);
+        Set<String> seen = new HashSet<>(count);
+        for (int i = 0; i < count; i++) {
+            String modeId = tensuraSkill.getModeId(probe, i);
+            if (modeId == null || modeId.isBlank() || !seen.add(modeId)) {
+                LOGGER.warn("Tensura mode vocabulary for {} skipped: mode id '{}' at index {}",
+                        id, modeId, i);
+                return List.of();
+            }
+            modes.add(new AbilityModes.Mode(modeId, id.getPath() + "_" + modeId));
+        }
+        return modes;
+    }
+
+    /**
+     * The live mode projection (core#113): the active preset's stored mode
+     * index for this skill, mapped through the owning skill to its native
+     * mode id - read live, server-side (core stores the function, never the
+     * state); unknown (empty) when the skill is not held, not slotted, or
+     * the index is out of range - never a guessed mode.
+     */
+    private static Optional<String> modeProjection(ServerPlayer player, ResourceLocation id) {
+        Optional<ManasSkillInstance> maybeInstance =
+                SkillAPI.getSkillsFrom(player).getSkill(id);
+        if (maybeInstance.isEmpty()) {
+            return Optional.empty();
+        }
+        ManasSkillInstance instance = maybeInstance.get();
+        int[] slotAndMode = resolvePresetSlot(player, instance);
+        if (slotAndMode == null) {
+            return Optional.empty();
+        }
+        int modeIndex = slotAndMode[1];
+        if (modeIndex < 0 || modeIndex >= instance.getModes()
+                || !(instance.getSkill() instanceof TensuraSkill tensuraSkill)) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(tensuraSkill.getModeId(instance, modeIndex));
     }
 
     /**
