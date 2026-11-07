@@ -2,6 +2,7 @@ package org.bitwisemadness.abilitytensura.activation;
 
 import io.github.manasmods.manascore.skill.api.ManasSkillInstance;
 import io.github.manasmods.manascore.skill.api.SkillAPI;
+import io.github.manasmods.tensura.network.c2s.RequestAbilityModeChangePacket;
 import io.github.manasmods.tensura.storage.TensuraStorages;
 import io.github.manasmods.tensura.storage.ability.AbilitySlot;
 import io.github.manasmods.tensura.storage.ability.IAbility;
@@ -16,6 +17,8 @@ import org.bitwisemadness.abilitycore.api.ActivationRequest;
 import org.bitwisemadness.abilitycore.api.ActivationResult;
 import org.bitwisemadness.abilitycore.api.ChargingModel;
 import org.bitwisemadness.abilitycore.api.CooldownOwners;
+import org.bitwisemadness.abilitycore.api.ModeChangeHandlers;
+import org.bitwisemadness.abilitycore.api.ModeChangeRequest;
 import org.bitwisemadness.abilitytensura.gate.UnlockGate;
 
 /**
@@ -83,6 +86,10 @@ public final class TensuraActivation {
             // (core's HANDLER contract, alpha.45): core gates with this
             // read, ARR stays the sole owner and start site of its state.
             CooldownOwners.declareHandler(id, TensuraActivation::cooldownRemaining);
+            // The mode-change domain half (#53): core routes the hotbar's
+            // intent here and ARR's native body moves the mode - no second
+            // mode logic exists in this repo.
+            ModeChangeHandlers.register(id, TensuraActivation::changeMode);
         }
     }
 
@@ -154,6 +161,43 @@ public final class TensuraActivation {
             return Math.max(1L, instance.getCoolDown(mode));
         }
         return 0L;
+    }
+
+    /**
+     * The mode-cycle domain half (core#113's {@code ModeChangeHandler},
+     * #53): the intent is cycle-shaped, so this builds ARR's own cycle
+     * packet for the resolved active-preset slot and runs its native
+     * server-side body - parity by construction: same nextMode, same
+     * vetoes, same native messages, same zero-residue refusals. Not
+     * learned and not slotted refuse RESTRICTED before ARR runs (this
+     * service's own refusals); after the native body an unchanged slot
+     * mode reports the closest native reason without inventing one: one
+     * mode to offer - UNAVAILABLE, anything else refused - RESTRICTED.
+     * {@code alternative} stays false: the plain native key semantics
+     * (the reverse direction needs transport state {@link ModeChangeRequest}
+     * carries neither).
+     */
+    public static ActivationResult changeMode(ModeChangeRequest request, ServerPlayer player) {
+        Optional<ManasSkillInstance> maybeInstance =
+                SkillAPI.getSkillsFrom(player).getSkill(request.abilityId());
+        if (maybeInstance.isEmpty()) {
+            return ActivationResult.refused(ActivationOutcome.REFUSED_RESTRICTED);
+        }
+        ManasSkillInstance instance = maybeInstance.get();
+        int[] slotAndMode = resolvePresetSlot(player, instance);
+        if (slotAndMode == null) {
+            return ActivationResult.refused(ActivationOutcome.REFUSED_RESTRICTED);
+        }
+        int before = slotAndMode[1];
+        RequestAbilityModeChangePacket.changeModePacket(slotAndMode[0], false)
+                .changeMode(player);
+        int[] after = resolvePresetSlot(player, instance);
+        if (after != null && after[1] != before) {
+            return ActivationResult.ACTED;
+        }
+        return ActivationResult.refused(instance.getModes() <= 1
+                ? ActivationOutcome.REFUSED_UNAVAILABLE
+                : ActivationOutcome.REFUSED_RESTRICTED);
     }
 
     /**
