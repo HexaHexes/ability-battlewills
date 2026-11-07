@@ -139,6 +139,8 @@ public final class UnlockGate {
             }
             return EventResult.pass();
         });
+        // Menu tabs (ability-tensura#75): its own guard covers hotbar's absence.
+        TensuraMenuTabs.register();
     }
 
     /**
