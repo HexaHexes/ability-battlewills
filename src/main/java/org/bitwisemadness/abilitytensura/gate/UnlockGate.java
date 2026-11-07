@@ -119,6 +119,9 @@ public final class UnlockGate {
             // The read seam (core#117): consumers ask core, not upstream -
             // all our ids are declared, so downstream never sees unknown.
             AbilityUnlocks.declare(id, UnlockGate::unlockAnswer);
+            // Live menu presentations (ability-tensura#66): mastery + toggle,
+            // same gating - without Tensura there is no state to present.
+            TensuraPresentations.declare(id);
         }
         // Removal half: the event is cancelable (pre-removal), so a
         // presence check would still see the skill and lie - its id is the
