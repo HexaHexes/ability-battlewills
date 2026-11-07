@@ -21,6 +21,8 @@ class TrsMenuBridgeTest {
             "com.japaeditor.tensuraevolution.client.DirectSkillLoadoutScreen";
     private static final String EVOLUTION_LOADOUT =
             "com.japaeditor.tensuraevolution.client.EvolutionSkillLoadoutScreen";
+    private static final String CATEGORY_PICKER =
+            "com.japaeditor.tensuraevolution.client.SkillCategoryPickerScreen";
 
     @Test
     void presentTensuraReplacesTheEquipSurface() {
@@ -32,6 +34,8 @@ class TrsMenuBridgeTest {
                 "their direct loadout replaces");
         assertTrue(TrsMenuBridge.replaces(true, EVOLUTION_LOADOUT),
                 "their evolution loadout replaces");
+        assertTrue(TrsMenuBridge.replaces(true, CATEGORY_PICKER),
+                "the status screen's Equipar skills landing replaces too");
     }
 
     @Test
@@ -39,6 +43,8 @@ class TrsMenuBridgeTest {
         assertFalse(TrsMenuBridge.replaces(false, ARR_ENTRY),
                 "without TRS the baseline must be byte-identical");
         assertFalse(TrsMenuBridge.replaces(false, CATEGORY),
+                "without TRS the baseline must be byte-identical");
+        assertFalse(TrsMenuBridge.replaces(false, CATEGORY_PICKER),
                 "without TRS the baseline must be byte-identical");
     }
 
