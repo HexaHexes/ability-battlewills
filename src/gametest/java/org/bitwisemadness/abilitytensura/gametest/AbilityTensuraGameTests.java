@@ -1,6 +1,8 @@
 package org.bitwisemadness.abilitytensura.gametest;
 
 import com.mojang.authlib.GameProfile;
+import io.github.manasmods.manascore.skill.api.ManasSkill;
+import io.github.manasmods.manascore.skill.api.SkillAPI;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
@@ -10,6 +12,7 @@ import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import org.bitwisemadness.abilitycore.AbilityCore;
+import org.bitwisemadness.abilitycore.api.AbilityModes;
 import org.bitwisemadness.abilitycore.api.AbilityUnlocks;
 import org.bitwisemadness.abilitycore.api.ActivationOutcome;
 import org.bitwisemadness.abilitycore.api.AvailabilityProviders;
@@ -17,9 +20,11 @@ import org.bitwisemadness.abilitycore.api.ChargingModel;
 import org.bitwisemadness.abilitycore.api.CooldownOwners;
 import org.bitwisemadness.abilitycore.api.ModeChangeHandlers;
 import org.bitwisemadness.abilitycore.api.ModeChangeRequest;
+import org.bitwisemadness.abilitycore.api.ModeOwners;
 import org.bitwisemadness.abilitycore.api.VisibilityHandlers;
 import org.bitwisemadness.abilitycore.discovery.AbilityDiscovery;
 import org.bitwisemadness.abilitytensura.AbilityTensura;
+import org.bitwisemadness.abilitytensura.activation.TensuraActivation;
 import org.bitwisemadness.abilitytensura.catalog.BattlewillCatalog;
 import org.bitwisemadness.abilitytensura.catalog.TensuraAbilityCatalog;
 
@@ -196,6 +201,42 @@ public final class AbilityTensuraGameTests {
                 "an unlearned art must hide for a live player: " + id);
         check(VisibilityHandlers.visible(null, id),
                 "an unknown context must never hide the art: " + id);
+        helper.succeed();
+    }
+
+    /**
+     * The mode vocabulary's coverage (core#113): every catalog art whose
+     * upstream skill offers an expressible vocabulary declares it - and
+     * only those - computed through {@link TensuraActivation#vocabularyFor}
+     * so the fixture and production share ONE rule and can never drift.
+     * The registry lookup and a non-vacuous cycleable count are asserted so
+     * an extraction that silently resolved nothing can never pass.
+     */
+    @GameTest(template = "empty")
+    public static void declaresModeVocabularyForMultiModeArts(GameTestHelper helper) {
+        check(ModList.get().isLoaded("tensura"),
+                "Tensura must be staged for the mode vocabulary test");
+        var skillAndMagic = TensuraAbilityCatalog.expectedIds();
+        check(SkillAPI.getSkillRegistry().get(skillAndMagic.iterator().next()) != null,
+                "the skill registry must resolve catalog ids");
+        var expected = new java.util.HashSet<>(skillAndMagic);
+        for (String path : BattlewillCatalog.paths()) {
+            expected.add(BattlewillCatalog.idFor(path));
+        }
+        int cycleable = 0;
+        for (ResourceLocation id : expected) {
+            ManasSkill skill = SkillAPI.getSkillRegistry().get(id);
+            boolean declares = !TensuraActivation.vocabularyFor(id, skill).isEmpty();
+            if (declares) {
+                cycleable++;
+            }
+            check(AbilityModes.has(id) == declares,
+                    "mode vocabulary must match the upstream rule for: " + id);
+            check((ModeOwners.projectionFor(id) != null) == declares,
+                    "the live mode projection must pair with the vocabulary for: " + id);
+        }
+        check(cycleable > 0,
+                "upstream must offer at least one cycleable art (no vacuous pass)");
         helper.succeed();
     }
 }
