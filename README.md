@@ -20,6 +20,10 @@ RPG pack.
   preset slots server-side, so native casting and the ability pipeline
   agree on what fires; battlewills activate natively first, with the hotbar
   seam as an addition.
+- **Mode switching** - the hotbar's mode keybind intent routes through
+  Ability Core's mode-change contract into ARR's own cycle packet
+  (per-slot mode presets included), so both paths move the same native
+  state (the keybind and its transport ride the Ability Hotbar). 
 - **Datapack-first** - definitions, tags, progression and restrictions
   live in datapack data, so content is editable without code. Iron's
   Spells and Better Spellcasting are not hard dependencies.
