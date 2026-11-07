@@ -29,6 +29,9 @@ RPG pack.
   activation pipeline never charges or affordability-gates these arts -
   Tensura pays and regenerates aura and magicule itself, so this pack
   adds no regeneration either.
+- **Tensura RPG System menu** - with TRS installed, its equip-skills
+  menu opens this pack's ability menu instead: one menu, no extra
+  hotkey registered; without TRS, nothing changes.
 - **Datapack-first** - definitions, tags, progression and restrictions
   live in datapack data, so content is editable without code. Iron's
   Spells and Better Spellcasting are not hard dependencies.
