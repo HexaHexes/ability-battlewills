@@ -31,6 +31,23 @@ RPG pack.
   the additive-art schema and the Ability Hotbar provider adapter - is
   tracked in this repository's open issues.
 
+## Aura and magicules (resources)
+
+Battlewills are priced in **aura** - each art carries its native
+`auraCost` (200 by default), and Tensura's config owns every number in
+this system: this pack reads the native state and never re-implements
+any of it. Aura refills **from magicule, natively**: hold the battlewill
+(`tensura:battlewill`) and, every one and a half seconds while your aura
+isn't full, a share of your maximum magicule converts into the same
+amount of aura - the share defaults to **1% of your max magicule** and
+**doubles once the art is mastered** (`percentage` in Tensura's battlewill
+config, `mastered = percentage / 50` against the unmastered
+`percentage / 100`), with the cast sound and pulse. Too little magicule
+and nothing converts - the red "lack magicule" line says so. Our bars
+project this same native state for affordability, and our activation
+paths never pre-charge magicule for a native art: the native pipeline
+pays, exactly once.
+
 ## Dependencies
 
 | | Mod | Why |
