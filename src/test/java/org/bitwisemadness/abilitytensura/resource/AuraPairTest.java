@@ -53,8 +53,8 @@ class AuraPairTest {
             ResourceLocation.fromNamespaceAndPath("tensura", "skill");
     private static final ResourceCost COST = new ResourceCost(TensuraResources.AURA, 10.0);
 
-    private static final Function<ServerPlayer, Double> ORIGINAL_READ = AuraPair.balanceRead;
-    private static final BiConsumer<ServerPlayer, Double> ORIGINAL_WRITE = AuraPair.balanceWrite;
+    private static final Function<ServerPlayer, Double> ORIGINAL_READ = AuraPair.PAIR.balanceRead;
+    private static final BiConsumer<ServerPlayer, Double> ORIGINAL_WRITE = AuraPair.PAIR.balanceWrite;
 
     private ActivationHandlerRegistry handlers;
     private ActivationPipeline pipeline;
@@ -82,8 +82,8 @@ class AuraPairTest {
         AbilityRegistries.installRegistryForTests(previousRegistry);
         ResourceProviders.remove(TensuraResources.AURA);
         ResourceConsumers.remove(TensuraResources.AURA);
-        AuraPair.balanceRead = ORIGINAL_READ;
-        AuraPair.balanceWrite = ORIGINAL_WRITE;
+        AuraPair.PAIR.balanceRead = ORIGINAL_READ;
+        AuraPair.PAIR.balanceWrite = ORIGINAL_WRITE;
         trace.clear();
         writes.clear();
     }
@@ -142,8 +142,8 @@ class AuraPairTest {
     @Test
     void auraCostedAbilityChargesExactlyOnceEndToEnd() {
         TensuraResources.declareAura(true);
-        AuraPair.balanceRead = player -> 100.0;
-        AuraPair.balanceWrite = (player, value) -> writes.add(value);
+        AuraPair.PAIR.balanceRead = player -> 100.0;
+        AuraPair.PAIR.balanceWrite = (player, value) -> writes.add(value);
         registerActingHandler();
 
         var result = run();
