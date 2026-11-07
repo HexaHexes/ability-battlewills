@@ -53,8 +53,8 @@ class EPPairTest {
             ResourceLocation.fromNamespaceAndPath("tensura", "skill");
     private static final ResourceCost COST = new ResourceCost(TensuraResources.EP, 10.0);
 
-    private static final Function<ServerPlayer, Double> ORIGINAL_READ = EPPair.balanceRead;
-    private static final BiConsumer<ServerPlayer, Double> ORIGINAL_WRITE = EPPair.balanceWrite;
+    private static final Function<ServerPlayer, Double> ORIGINAL_READ = EPPair.PAIR.balanceRead;
+    private static final BiConsumer<ServerPlayer, Double> ORIGINAL_WRITE = EPPair.PAIR.balanceWrite;
 
     private ActivationHandlerRegistry handlers;
     private ActivationPipeline pipeline;
@@ -82,8 +82,8 @@ class EPPairTest {
         AbilityRegistries.installRegistryForTests(previousRegistry);
         ResourceProviders.remove(TensuraResources.EP);
         ResourceConsumers.remove(TensuraResources.EP);
-        EPPair.balanceRead = ORIGINAL_READ;
-        EPPair.balanceWrite = ORIGINAL_WRITE;
+        EPPair.PAIR.balanceRead = ORIGINAL_READ;
+        EPPair.PAIR.balanceWrite = ORIGINAL_WRITE;
         trace.clear();
         writes.clear();
     }
@@ -142,8 +142,8 @@ class EPPairTest {
     @Test
     void epCostedAbilityChargesExactlyOnceEndToEnd() {
         TensuraResources.declareEP(true);
-        EPPair.balanceRead = player -> 100.0;
-        EPPair.balanceWrite = (player, value) -> writes.add(value);
+        EPPair.PAIR.balanceRead = player -> 100.0;
+        EPPair.PAIR.balanceWrite = (player, value) -> writes.add(value);
         registerActingHandler();
 
         var result = run();
