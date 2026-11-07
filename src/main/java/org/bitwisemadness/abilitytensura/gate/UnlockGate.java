@@ -23,6 +23,7 @@ import org.bitwisemadness.abilitycore.api.ActivationSource;
 import org.bitwisemadness.abilitycore.api.AvailabilityProviders;
 import org.bitwisemadness.abilitycore.api.AvailabilityState;
 import org.bitwisemadness.abilitycore.api.Metric;
+import org.bitwisemadness.abilitycore.api.VisibilityHandlers;
 
 /**
  * The unlock gate (owner directive, 2026-11-06): <b>every ability this mod
@@ -122,6 +123,10 @@ public final class UnlockGate {
             // Live menu presentations (ability-tensura#66): mastery + toggle,
             // same gating - without Tensura there is no state to present.
             TensuraPresentations.declare(id);
+            // Menu visibility (core#124): tensura's own rule - an art
+            // lists only when unlocked; unknown never hides (the
+            // never-guess read), so bugs degrade to today's listing.
+            VisibilityHandlers.declare(id, UnlockGate::menuVisible);
         }
         // Removal half: the event is cancelable (pre-removal), so a
         // presence check would still see the skill and lie - its id is the
@@ -187,6 +192,17 @@ public final class UnlockGate {
         return player == null
                 ? Optional.empty()
                 : Optional.of(readLearned(player, id));
+    }
+
+    /**
+     * Tensura's menu visibility rule (core#124): an art lists only when
+     * the player has unlocked it - the same live read the eligibility
+     * gate, the menu dim and the assignment validation use (one
+     * possession question, one answer). Unknown (no player) stays
+     * visible: unknown never hides (hotbar#153's never-guess).
+     */
+    public static boolean menuVisible(Player player, ResourceLocation id) {
+        return AbilityUnlocks.isLearned(player, id).orElse(Boolean.TRUE);
     }
 
     /** The display half: unknown metrics + the unlock verdict. */
